@@ -27,7 +27,16 @@ def hammer(url, throws, verbose, hid):
 
     Return the average elapsed time of all the throws.
     '''
-    return 0
+    start = time.time()
+
+    r = requests.get(url)
+    if verbose:
+        print(r.text)
+
+
+
+    end = time.time() - start
+    return end
 
 def do_hammer(args):
     ''' Use args tuple to call `hammer` '''
@@ -37,10 +46,27 @@ def main():
     hammers = 1
     throws  = 1
     verbose = False
+    arguments = sys.argv[1:]
+    URL = None
+
+    if len(sys.argv) == 1:
+        usage()
 
     # Parse command line arguments
-    pass
+    while arguments:
+        arg = arguments.pop(0)
 
+        if arg == '-h':
+            hammers = arguments.pop(0)
+        elif arg == '-t':
+            throws = arguments.pop(0)
+        elif arg == '-v':
+            verbose = True
+        else:
+            URL = arg
+    t = hammer(URL, throws, verbose, hammers)
+    print(f'total time: {round(t, 2)}')
+   
     # Create pool of workers and perform throws
     pass
 
