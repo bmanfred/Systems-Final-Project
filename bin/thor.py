@@ -27,16 +27,35 @@ def hammer(url, throws, verbose, hid):
 
     Return the average elapsed time of all the throws.
     '''
-    start = time.time()
 
-    r = requests.get(url)
-    if verbose:
-        print(r.text)
+    total_time = 0
+    for attempt in range(throws):
+        start = time.time()
 
+        # error checking
+        try:
+            r = requests.get(url)
+            r.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(e)
+            sys.exit(1)
+        except requests.exceptions.HTTPError as e:
+            print(e)
+            sys.exit(1)
 
+ 
+        if verbose:
+            print(r.text)
 
-    end = time.time() - start
-    return end
+        # calculate total time
+        end = time.time() - start;
+        print(f'Hammer: {hid}, Throw:     {attempt}, Elapsed Time: {round(end, 2)}')
+        total_time += end
+ 
+    average = total_time / float(throws)
+    print(f'Hammer: {hid}, AVERAGE     , Elapsed Time: {round(average, 2)}')
+
+    return average
 
 def do_hammer(args):
     ''' Use args tuple to call `hammer` '''
@@ -50,25 +69,35 @@ def main():
     URL = None
 
     if len(sys.argv) == 1:
-        usage()
+        usage(1)
 
     # Parse command line arguments
     while arguments:
-        arg = arguments.pop(0)
+        argument = arguments.pop(0)
 
-        if arg == '-h':
-            hammers = arguments.pop(0)
-        elif arg == '-t':
-            throws = arguments.pop(0)
-        elif arg == '-v':
+        if argument == '-h':
+            hammers = int(arguments.pop(0))
+        elif argument == '-t':
+            throws = int(arguments.pop(0))
+        elif argument == '-v':
             verbose = True
+        elif argument.startswith('http'):
+            URL = argument
         else:
-            URL = arg
-    t = hammer(URL, throws, verbose, hammers)
-    print(f'total time: {round(t, 2)}')
-   
+            usage(1)
+
+       
     # Create pool of workers and perform throws
-    pass
+    args = ((URL, throws, verbose, hid) for hid in range(hammers))
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(do_hammer, args)
+    
+    # must use for loop to get average from results since it is a generator object
+    for item in results:
+        average = item
+
+    print(f'TOTAL AVERAGE ELAPSED TIME: {round(average, 2)}')
+
 
 # Main execution
 
