@@ -91,7 +91,10 @@ int main(int argc, char *argv[]) {
     /* Parse command line options */
 
     /* Listen to server socket */
-
+	int server_fd = socket_listen(Port);
+	if (server_fd < 0){
+		return EXIT_FAILURE;
+	}
 
 
     /* Determine real RootPath */
@@ -102,6 +105,7 @@ int main(int argc, char *argv[]) {
     debug("ConcurrencyMode = %s", mode == SINGLE ? "Single" : "Forking");
 
     /* Start either forking or single HTTP server */
+	single_server(server_fd);
     return 0;
 }
 

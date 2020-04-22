@@ -43,6 +43,12 @@ Status  handle_request(Request *r) {
 		return HTTP_STATUS_BAD_REQUEST;
 	}
 
+	while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
+		debug("header: %s", buffer);
+	}
+
+
+
     /* Determine request path */
     debug("HTTP REQUEST PATH: %s", r->path);
 

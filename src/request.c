@@ -87,7 +87,7 @@ void free_request(Request *r) {
     }
 
     /* Close socket or fd */
-	flcose(r->stream);
+	fclose(r->stream);
 
     /* Free allocated strings */
 
@@ -108,9 +108,15 @@ void free_request(Request *r) {
  **/
 int parse_request(Request *r) {
     /* Parse HTTP Request Method */
+	int status_method = parse_request_method(r);
 
     /* Parse HTTP Requet Headers*/
-    return 0;
+	int status_headers = parse_request_headers(r);
+	
+	if (status_method && status_headers == 0)
+		return 0;
+	else
+		return -1;
 }
 
 /**
@@ -149,20 +155,8 @@ int parse_request_method(Request *r) {
 	if (!method || !uri){
 		return HTTP_STATUS_BAD_REQUEST;
 	}
-
     /* Parse query from uri */
-	while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
-		debug("Header: %s", buffer);
-	}
-
-
-	/*hanlder example
-	fprintf(r->stream, "HTTP/1.0 200 OK\r\n");
-	fprintf(r->stream, "Content-Type: text/html\r\n");
-	fprintf(r->stream, "\r\n");
-
-	fprintf(r->stream, "<h1>Hi</h1>");
-	*/
+	
 
 
 
@@ -211,6 +205,9 @@ int parse_request_headers(Request *r) {
     char *data;
 
     /* Parse headers from socket */
+	while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
+		debug("Header: %s", buffer);
+	}
 
 #ifndef NDEBUG
     for (Header *header = r->headers; header; header = header->next) {
