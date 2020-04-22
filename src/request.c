@@ -30,21 +30,42 @@ int parse_request_headers(Request *r);
 Request * accept_request(int sfd) {
     Request *r;
     struct sockaddr raddr;
-    socklen_t rlen;
+    socklen_t rlen = sizeof(struct sockaddr);
 
     /* Allocate request struct (zeroed) */
+	r = calloc(1, sizeof(Request));
+	if (!r){
+		debug("Unable to allocate request: %s", strerror(errno));
+		goto fail;
+	}
 
     /* Accept a client */
+	r->fd = accept(sfd, &raddr, &rlen);
+	if (r->fd < 0){
+		debug("Unable to accept client: %s", strerror(errno));
+		goto fail;
+	}
 
     /* Lookup client information */
+	int status = getnameinfo(&raddr, rlen, r->host, sizeof(r->host), r->port, sizeof(r->port), NI_NUMERICHOST | NI_NUMERICSERV);
+	if (status < 0){
+		debug("Unable to getnameinfo: %s", gai_strerror(status));
+		goto fail;
+	}
 
     /* Open socket stream */
+	r->stream = fdopen(r->fd, "w+");
+	if (!r->stream){
+		debug("Unable to fdopen: %s", strerror(errno));
+		goto fail;
+	}
 
     log("Accepted request from %s:%s", r->host, r->port);
     return r;
 
 fail:
     /* Deallocate request struct */
+	free_request(r);
     return NULL;
 }
 
@@ -66,12 +87,14 @@ void free_request(Request *r) {
     }
 
     /* Close socket or fd */
+	flcose(r->stream);
 
     /* Free allocated strings */
 
     /* Free headers */
 
     /* Free request */
+	free(r);
 }
 
 /**
@@ -115,9 +138,33 @@ int parse_request_method(Request *r) {
 
     /* Read line from socket */
 
+	if (!fgets(buffer, BUFSIZ, r->stream)){
+		return HTTP_STATUS_BAD_REQUEST;
+	}
+
     /* Parse method and uri */
+	method  = strtok(buffer, WHITESPACE);
+	uri = strtok(NULL, WHITESPACE);
+
+	if (!method || !uri){
+		return HTTP_STATUS_BAD_REQUEST;
+	}
 
     /* Parse query from uri */
+	while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
+		debug("Header: %s", buffer);
+	}
+
+
+	/*hanlder example
+	fprintf(r->stream, "HTTP/1.0 200 OK\r\n");
+	fprintf(r->stream, "Content-Type: text/html\r\n");
+	fprintf(r->stream, "\r\n");
+
+	fprintf(r->stream, "<h1>Hi</h1>");
+	*/
+
+
 
     /* Record method, uri, and query in request struct */
     debug("HTTP METHOD: %s", r->method);

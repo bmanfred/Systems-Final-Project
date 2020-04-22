@@ -31,6 +31,17 @@ Status  handle_request(Request *r) {
     Status result;
 
     /* Parse request */
+	char buffer[BUFSIZ];
+	if (!fgets(buffer, BUFSIZ, r->stream)){
+		return HTTP_STATUS_BAD_REQUEST;
+	}
+
+	char *method = strtok(buffer, WHITESPACE);
+	char *uri = strtok(NULL, WHITESPACE);
+
+	if (!method || !uri){
+		return HTTP_STATUS_BAD_REQUEST;
+	}
 
     /* Determine request path */
     debug("HTTP REQUEST PATH: %s", r->path);

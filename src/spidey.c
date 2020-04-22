@@ -92,6 +92,8 @@ int main(int argc, char *argv[]) {
 
     /* Listen to server socket */
 
+
+
     /* Determine real RootPath */
     log("Listening on port %s", Port);
     debug("RootPath        = %s", RootPath);
@@ -100,7 +102,7 @@ int main(int argc, char *argv[]) {
     debug("ConcurrencyMode = %s", mode == SINGLE ? "Single" : "Forking");
 
     /* Start either forking or single HTTP server */
-    return status;
+    return 0;
 }
 
 /* vim: set expandtab sts=4 sw=4 ts=8 ft=c: */
