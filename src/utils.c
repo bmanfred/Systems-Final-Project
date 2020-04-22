@@ -83,7 +83,13 @@ const char * http_status_string(Status status) {
         "418 I'm A Teapot",
     };
 
-    return NULL;
+	if (status < sizeof(StatusStrings) / sizeof(char *)){
+		return StatusStrings[status];
+	}
+	else{
+		return NULL;
+	}
+
 }
 
 /**
