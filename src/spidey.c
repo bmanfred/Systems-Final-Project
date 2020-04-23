@@ -89,24 +89,36 @@ int main(int argc, char *argv[]) {
     ServerMode mode;
 
     /* Parse command line options */
+	bool parse = parse_options(argc, argv, &mode);
+	if (!parse){
+		debug("Failed to parse arguments");
+		return EXIT_FAILURE;
+	}
+	
 
     /* Listen to server socket */
 	int server_fd = socket_listen(Port);
 	if (server_fd < 0){
 		return EXIT_FAILURE;
 	}
-
-
+	
     /* Determine real RootPath */
+	char buffer[BUFSIZ];
+	char *realRootPath = realpath(RootPath, buffer);
     log("Listening on port %s", Port);
-    debug("RootPath        = %s", RootPath);
+    debug("RootPath        = %s", buffer);
     debug("MimeTypesPath   = %s", MimeTypesPath);
     debug("DefaultMimeType = %s", DefaultMimeType);
     debug("ConcurrencyMode = %s", mode == SINGLE ? "Single" : "Forking");
+	
+
 
     /* Start either forking or single HTTP server */
-	single_server(server_fd);
-    return 0;
+	if (mode == SINGLE)
+		single_server(server_fd);
+	else
+		forking_server(server_fd);
+    return EXIT_SUCCESS;;
 }
 
 /* vim: set expandtab sts=4 sw=4 ts=8 ft=c: */

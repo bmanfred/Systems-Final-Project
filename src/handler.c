@@ -31,27 +31,12 @@ Status  handle_request(Request *r) {
     Status result;
 
     /* Parse request */
-	char buffer[BUFSIZ];
-	if (!fgets(buffer, BUFSIZ, r->stream)){
-		return HTTP_STATUS_BAD_REQUEST;
-	}
-
-	char *method = strtok(buffer, WHITESPACE);
-	char *uri = strtok(NULL, WHITESPACE);
-
-	if (!method || !uri){
-		return HTTP_STATUS_BAD_REQUEST;
-	}
-
-	while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
-		debug("header: %s", buffer);
-	}
-
-
+	result = parse_request(r);
 
     /* Determine request path */
     debug("HTTP REQUEST PATH: %s", r->path);
-
+	result = handle_browse_request(r);
+	
     /* Dispatch to appropriate request handler type based on file type */
     log("HTTP REQUEST STATUS: %s", http_status_string(result));
 
@@ -71,13 +56,27 @@ Status  handle_request(Request *r) {
  **/
 Status  handle_browse_request(Request *r) {
     struct dirent **entries;
-    int n;
+    int n = scandir(RootPath, &entries, 0, alphasort);
+	if (n < 0){
+		debug("scandir failed: %s", strerror(errno));
+		return HTTP_STATUS_NOT_FOUND;
+	}
 
     /* Open a directory for reading or scanning */
+	
 
     /* Write HTTP Header with OK Status and text/html Content-Type */
+	fprintf(r->stream, "HTTP/1.0 200 OK\r\n");
+	fprintf(r->stream, "Content-Type: text/html\r\n");
+	fprintf(r->stream, "\r\n");
 
     /* For each entry in directory, emit HTML list item */
+	fprintf(r->stream, "<ol>\n");
+	for (int i = 0; i < n; i++){
+		fprintf(r->stream, "<li>%s</li>", entries[i]->d_name);
+	}
+	fprintf(r->stream, "</ol>\n");
+
 
     /* Return OK */
     return HTTP_STATUS_OK;
@@ -101,12 +100,24 @@ Status  handle_file_request(Request *r) {
     size_t nread;
 
     /* Open file for reading */
+	fs = fopen(r->path, "r");
+	if (!fs){
+		debug("File coult not be opened", strerror(errno));
+		return HTTP_STATUS_NOT_FOUND;
+	}
 
     /* Determine mimetype */
 
     /* Write HTTP Headers with OK status and determined Content-Type */
 
     /* Read from file and write to socket in chunks */
+	nread = fread(buffer, 1, BUFSIZ, fs);
+	while (nread > 0){
+		fwrite(buffer, 1, nread, r->stream);
+		fread(buffer, 1, BUFSIZ, fs);
+	}
+
+	fclose(fs);
 
     /* Close file, deallocate mimetype, return OK */
     return HTTP_STATUS_OK;

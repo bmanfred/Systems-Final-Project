@@ -59,7 +59,7 @@ Request * accept_request(int sfd) {
 		debug("Unable to fdopen: %s", strerror(errno));
 		goto fail;
 	}
-
+	
     log("Accepted request from %s:%s", r->host, r->port);
     return r;
 
@@ -81,6 +81,8 @@ fail:
  *  3. Frees all of the headers (including any allocated fields).
  *  4. Frees request struct.
  **/
+
+// still getting two valgrind errors with fdopen and calloc from accept_request
 void free_request(Request *r) {
     if (!r) {
     	return;
@@ -90,8 +92,14 @@ void free_request(Request *r) {
 	fclose(r->stream);
 
     /* Free allocated strings */
+	free(r->method);
+	free(r->uri);
+	free(r->query);
+	free(r->path);
 
     /* Free headers */
+
+	free(r->headers);
 
     /* Free request */
 	free(r);
@@ -113,10 +121,11 @@ int parse_request(Request *r) {
     /* Parse HTTP Requet Headers*/
 	int status_headers = parse_request_headers(r);
 	
-	if (status_method && status_headers == 0)
+	if (status_method == 0 && status_headers == 0)
 		return 0;
 	else
 		return -1;
+
 }
 
 /**
@@ -145,6 +154,7 @@ int parse_request_method(Request *r) {
     /* Read line from socket */
 
 	if (!fgets(buffer, BUFSIZ, r->stream)){
+		//debug("Unable to read line from socket: %s", strerror(errno));
 		return HTTP_STATUS_BAD_REQUEST;
 	}
 
@@ -156,9 +166,18 @@ int parse_request_method(Request *r) {
 		return HTTP_STATUS_BAD_REQUEST;
 	}
     /* Parse query from uri */
+
+	query = strchr(uri, '?');
+	if (!query){
+		query = "";
+	}
+	else{
+		*query++ = '\0';
+	}
 	
-
-
+	r->method = strdup(method);
+	r->uri = strdup(uri);
+	r->query = strdup(query);
 
     /* Record method, uri, and query in request struct */
     debug("HTTP METHOD: %s", r->method);
@@ -207,8 +226,16 @@ int parse_request_headers(Request *r) {
     /* Parse headers from socket */
 	while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
 		debug("Header: %s", buffer);
+		name = strtok(buffer, ":");
+		data = strtok(NULL, ":");
+		name = skip_whitespace(name);
+		data = skip_whitespace(data);
+		chomp(data);
+		debug("NAME: %s", name);
+		debug("DATA: %s", data);	
 	}
 
+	
 #ifndef NDEBUG
     for (Header *header = r->headers; header; header = header->next) {
     	debug("HTTP HEADER %s = %s", header->name, header->data);

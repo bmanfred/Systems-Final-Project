@@ -109,7 +109,10 @@ char * skip_nonwhitespace(char *s) {
  * @return  Point to first non-whitespace character in s.
  **/
 char * skip_whitespace(char *s) {
-    return s;
+	char *w = s;
+	while (isspace(*w)){
+		w++;
+	}
+    return w;
 }
-
 /* vim: set expandtab sts=4 sw=4 ts=8 ft=c: */
