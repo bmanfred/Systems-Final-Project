@@ -38,7 +38,7 @@ int forking_server(int sfd) {
 		}
 		else if (pid == 0){
 			handle_request(request);
-			close(request->fd);
+			free_request(request);
 			exit(EXIT_SUCCESS);
 		}
 		else{
