@@ -95,7 +95,6 @@ void free_request(Request *r) {
 	free(r->method);
 	free(r->uri);
 	free(r->query);
-	free(r->path);
 
     /* Free headers */
 

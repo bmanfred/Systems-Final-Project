@@ -102,13 +102,12 @@ int main(int argc, char *argv[]) {
 	}
 	
     /* Determine real RootPath */
-	char buffer[BUFSIZ];
-	char *realRootPath = realpath(RootPath, buffer);
-    log("Listening on port %s", Port);
-    debug("RootPath        = %s", buffer);
-    debug("MimeTypesPath   = %s", MimeTypesPath);
-    debug("DefaultMimeType = %s", DefaultMimeType);
-    debug("ConcurrencyMode = %s", mode == SINGLE ? "Single" : "Forking");
+        char *realRootPath = realpath(RootPath, NULL);
+        log("Listening on port %s", Port);
+        debug("RootPath        = %s", realRootPath);
+        debug("MimeTypesPath   = %s", MimeTypesPath);
+        debug("DefaultMimeType = %s", DefaultMimeType);
+        debug("ConcurrencyMode = %s", mode == SINGLE ? "Single" : "Forking");
 
 
 	

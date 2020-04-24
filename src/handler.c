@@ -31,16 +31,14 @@ Status  handle_request(Request *r) {
     Status result;
 
     /* Parse request */
-	result = parse_request(r);
+    result = parse_request(r);
 
     /* Determine request path */
+    r->path = determine_request_path(r->uri);
+    
     debug("HTTP REQUEST PATH: %s", r->path);
-        char temp[] = "html.txt";
-	determine_mimetype(temp);
-	result = handle_browse_request(r);
-	if (result != 0){
-		handle_error(r, result);
-	}
+    //determine_mimetype(r->path);
+    
     /* Dispatch to appropriate request handler type based on file type */
     log("HTTP REQUEST STATUS: %s", http_status_string(result));
 
