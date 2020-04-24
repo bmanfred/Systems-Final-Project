@@ -154,7 +154,7 @@ int parse_request_method(Request *r) {
     /* Read line from socket */
 
 	if (!fgets(buffer, BUFSIZ, r->stream)){
-		//debug("Unable to read line from socket: %s", strerror(errno));
+		debug("Unable to read line from socket: %s", strerror(errno));
 		return HTTP_STATUS_BAD_REQUEST;
 	}
 
@@ -166,7 +166,7 @@ int parse_request_method(Request *r) {
 		return HTTP_STATUS_BAD_REQUEST;
 	}
     /* Parse query from uri */
-
+	//TODO: change value of uri
 	query = strchr(uri, '?');
 	if (!query){
 		query = "";
