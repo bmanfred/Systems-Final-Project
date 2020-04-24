@@ -37,18 +37,21 @@ char * determine_mimetype(const char *path) {
     char *token;
     char buffer[BUFSIZ];
     FILE *fs = NULL;
-	size_t nread;
 
     /* Find file extension */
 	debug("trying to find extension");
-	debug("%s", path);
-	ext = strchr(path, ".");
+        debug("Path: %s", path);
+	ext = strchr(path, '.');
 	if (!ext){
 		ext = "";
+                return DefaultMimeType;
 	}
 	else{
 		*ext++ = '\0';
 	}
+        
+        debug("ext: %s", ext);
+
     /* Open MimeTypesPath file */
 	debug("opening MimeTypesPath");	
 	fs = fopen(MimeTypesPath, "r");
@@ -56,19 +59,34 @@ char * determine_mimetype(const char *path) {
 		debug("unable to open file: %s", strerror(errno));
 		return NULL;
 	}
-	
-	debug("reading from mimetypes file");
-	nread = fread(buffer, 1, BUFSIZ, fs);
-	while (nread > 0){
-		debug("file: %s", buffer);
-		nread = fread(buffer, 1, BUFSIZ, fs);
+    
+        /* Scan file for matching file extensions */
+        /* read each line in MimeTypesPath, saving mimetype and token
+           depending on whitespace in file 
+        */
+        debug("reading from mimetypes file");
+
+        while (fgets(buffer, BUFSIZ, fs)){
+    
+                mimetype = strtok(buffer, WHITESPACE);
+                token    = strtok(NULL, WHITESPACE); 
+ 
+                if(token == NULL)
+                    continue;
+
+                // debug("mimetype: %s", mimetype);
+                // debug("token: %s", token);
+
+                if(streq(ext, token)) {
+
+                    debug("RETURNING: %s", mimetype);
+                    return mimetype;
+                }
 	}
 	
 	fclose(fs);
-
-	
-    /* Scan file for matching file extensions */
-    //return NULL;
+ 
+    return DefaultMimeType;
 }
 
 /**
