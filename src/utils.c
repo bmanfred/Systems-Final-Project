@@ -106,7 +106,22 @@ char * determine_mimetype(const char *path) {
  * string must later be free'd.
  **/
 char * determine_request_path(const char *uri) {
-    return NULL;
+    
+    char buffer[BUFSIZ];
+    debug("uri: %s", uri);
+
+    char *realRequestPath = realpath(RootPath, buffer);
+    sprintf(realRequestPath, "%s%s", realRequestPath, uri);
+    debug("realRequestPath: %s", realRequestPath);
+   
+    if(realRequestPath == NULL)
+        return NULL;
+
+    if(strstr(realRequestPath, RootPath) == NULL) {
+        return NULL;    
+    }
+
+    return realRequestPath;
 }
 
 /**
@@ -142,6 +157,10 @@ const char * http_status_string(Status status) {
  * @return  Point to first whitespace character in s.
  **/
 char * skip_nonwhitespace(char *s) {
+    while(!isspace(*s)) {
+       s++;     
+    }
+        
     return s;
 }
 
@@ -152,10 +171,10 @@ char * skip_nonwhitespace(char *s) {
  * @return  Point to first non-whitespace character in s.
  **/
 char * skip_whitespace(char *s) {
-	char *w = s;
-	while (isspace(*w)){
-		w++;
-	}
-    return w;
+    while(isspace(*s)){
+        s++;
+    }
+    
+    return s;
 }
 /* vim: set expandtab sts=4 sw=4 ts=8 ft=c: */
