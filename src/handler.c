@@ -35,6 +35,7 @@ Status  handle_request(Request *r) {
 
     /* Determine request path */
     debug("HTTP REQUEST PATH: %s", r->path);
+	determine_mimetype("html.txt");
 	result = handle_browse_request(r);
 	if (result != 0){
 		handle_error(r, result);
@@ -122,7 +123,7 @@ Status  handle_file_request(Request *r) {
 	nread = fread(buffer, 1, BUFSIZ, fs);
 	while (nread > 0){
 		fwrite(buffer, 1, nread, r->stream);
-		fread(buffer, 1, BUFSIZ, fs);
+		nread = fread(buffer, 1, BUFSIZ, fs);
 	}
 
 	fclose(fs);
@@ -138,7 +139,7 @@ fail:
 /**
  * Handle CGI request
  *
- * @param   r           HTTP Request structure.
+ * @param   e           HTTP Request structure.
  * @return  Status of the HTTP file request.
  *
  * This popens and streams the results of the specified executables to the

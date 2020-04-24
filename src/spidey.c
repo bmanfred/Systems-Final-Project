@@ -95,7 +95,6 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	
-
     /* Listen to server socket */
 	int server_fd = socket_listen(Port);
 	if (server_fd < 0){
@@ -110,6 +109,8 @@ int main(int argc, char *argv[]) {
     debug("MimeTypesPath   = %s", MimeTypesPath);
     debug("DefaultMimeType = %s", DefaultMimeType);
     debug("ConcurrencyMode = %s", mode == SINGLE ? "Single" : "Forking");
+
+
 	
 
 
