@@ -15,7 +15,7 @@ clean:
 
 .PHONY:		all test clean
 
-# Test text
+# Test 2
 
 # TODO: Add rules for bin/spidey, lib/libspidey.a, and any intermediate objects
 
