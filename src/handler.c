@@ -35,7 +35,8 @@ Status  handle_request(Request *r) {
 
     /* Determine request path */
     debug("HTTP REQUEST PATH: %s", r->path);
-	determine_mimetype("html.txt");
+        char temp[] = "html.txt";
+	determine_mimetype(temp);
 	result = handle_browse_request(r);
 	if (result != 0){
 		handle_error(r, result);
