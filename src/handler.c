@@ -36,7 +36,9 @@ Status  handle_request(Request *r) {
     /* Determine request path */
     debug("HTTP REQUEST PATH: %s", r->path);
 	result = handle_browse_request(r);
-	
+	if (result != 0){
+		handle_error(r, result);
+	}
     /* Dispatch to appropriate request handler type based on file type */
     log("HTTP REQUEST STATUS: %s", http_status_string(result));
 
@@ -73,9 +75,15 @@ Status  handle_browse_request(Request *r) {
     /* For each entry in directory, emit HTML list item */
 	fprintf(r->stream, "<ol>\n");
 	for (int i = 0; i < n; i++){
+		if (streq(entries[i]->d_name, ".")){
+			continue;
+		}
 		fprintf(r->stream, "<li>%s</li>", entries[i]->d_name);
+		free(entries[i]);
 	}
+	free(entries);
 	fprintf(r->stream, "</ol>\n");
+
 
 
     /* Return OK */
@@ -169,8 +177,13 @@ Status  handle_error(Request *r, Status status) {
     const char *status_string = http_status_string(status);
 
     /* Write HTTP Header */
+	fprintf(r->stream, "HTTP/1.0 200 OK\r\n");
+	fprintf(r->stream, "Content-Type: text/html\r\n");
+	fprintf(r->stream, "\r\n");
 
     /* Write HTML Description of Error*/
+	fprintf(r->stream, "<h1><center>%s</center></h1>\n", status_string);
+	fprintf(r->stream, "<h3><center>Nice Try!</center></h3>");
 
     /* Return specified status */
     return status;
