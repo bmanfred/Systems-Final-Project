@@ -84,25 +84,7 @@ char * determine_mimetype(const char *path) {
 			}
 			token = strtok(NULL, WHITESPACE);
 		}
-/*
-				debug("mimetype: %s", mimetype);
-				//token    = strtok(NULL, WHITESPACE);
 
-
-
- 
-                if(token == NULL)
-                    continue;
-
-                //debug("mimetype: %s", mimetype);
-                //debug("token: %s", token);
-
-
-                if(streq(ext, token)) {
-
-                    debug("RETURNING: %s", mimetype);
-                    return mimetype;
-                }*/
 	}
 	
 	fclose(fs);
