@@ -34,10 +34,12 @@ Status  handle_request(Request *r) {
     result = parse_request(r);
 
     /* Determine request path */
+
     r->path = determine_request_path(r->uri);
     
     debug("HTTP REQUEST PATH: %s", r->path);
-    //determine_mimetype(r->path);
+    char * mime = determine_mimetype(r->path);
+	//debug("Mimetype: %s", mime);
     
     /* Dispatch to appropriate request handler type based on file type */
     log("HTTP REQUEST STATUS: %s", http_status_string(result));
