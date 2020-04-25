@@ -98,9 +98,13 @@ void free_request(Request *r) {
 	free(r->path);
 
     /* Free headers */
+	for (Header *header = r->headers; header; header = header->next){
+		free(header->name);
+		free(header->data);
+	}
 
 	free(r->headers);
-
+		
     /* Free request */
 	free(r);
 }
@@ -223,16 +227,18 @@ int parse_request_headers(Request *r) {
     char *name;
     char *data;
 
-	r->headers = curr;
+	r->headers = NULL;
 
     /* Parse headers from socket */
 	while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
 		debug("Header: %s", buffer);
+		chomp(buffer);
 		name = strtok(buffer, ":");
 		data = strtok(NULL, ":");
+
 		name = skip_whitespace(name);
 		data = skip_whitespace(data);
-		chomp(data);
+
 		debug("NAME: %s", name);
 		debug("DATA: %s", data);
 
@@ -241,19 +247,14 @@ int parse_request_headers(Request *r) {
 			debug("calloc failed for headers: %s", strerror(errno));
 			goto fail;
 		}
-		curr->next = header;
-		header->name = name;
-		header->data = data;
-		header->next = NULL;
 
-		curr = curr->next;
+		header->name = strdup(name);
+		header->data = strdup(data);
+		header->next = r->headers;
+		r->headers = header;
 	}
 
-	for (Header *header = r->headers; header; header = header->next) {
-    	debug("HTTP HEADER %s = %s", header->name, header->data);
-    }
-
-
+	
 	
 #ifndef NDEBUG
     for (Header *header = r->headers; header; header = header->next) {
