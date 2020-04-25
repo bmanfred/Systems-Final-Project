@@ -40,17 +40,17 @@ char * determine_mimetype(const char *path) {
 
     /* Find file extension */
 	debug("trying to find extension");
-        debug("Path: %s", path);
+    debug("Path: %s", path);
 	ext = strchr(path, '.');
 	if (!ext){
 		ext = "";
-                return DefaultMimeType;
+        return DefaultMimeType;
 	}
 	else{
 		*ext++ = '\0';
 	}
         
-        debug("ext: %s", ext);
+    debug("ext: %s", ext);
 
     /* Open MimeTypesPath file */
 	debug("opening MimeTypesPath");	
@@ -59,29 +59,52 @@ char * determine_mimetype(const char *path) {
 		debug("unable to open file: %s", strerror(errno));
 		return NULL;
 	}
-    
-        /* Scan file for matching file extensions */
-        /* read each line in MimeTypesPath, saving mimetype and token
-           depending on whitespace in file 
-        */
-        debug("reading from mimetypes file");
 
-        while (fgets(buffer, BUFSIZ, fs)){
     
-                mimetype = strtok(buffer, WHITESPACE);
-                token    = strtok(NULL, WHITESPACE); 
+    /* Scan file for matching file extensions */
+  		  /* read each line in MimeTypesPath, saving mimetype and token
+		 * depending on whitespace in file 
+    */
+ 	debug("reading from mimetypes file");
+	
+	debug("ext: %s", ext);
+	while (fgets(buffer, BUFSIZ, fs)){
+		debug("ext: %s", ext);
+		break;
+
+		mimetype  = strtok(buffer, WHITESPACE);
+		debug("mimetype: %s", mimetype);
+		token = strtok(NULL, WHITESPACE);
+		while (token){
+			debug("token: %s", token);
+			debug("ext:   %s", ext);
+
+			if (streq(ext, token)){
+				debug("returning: %s", mimetype);
+				fclose(fs);
+				return mimetype;
+			}
+			token = strtok(NULL, WHITESPACE);
+		}
+/*
+				debug("mimetype: %s", mimetype);
+				//token    = strtok(NULL, WHITESPACE);
+
+
+
  
                 if(token == NULL)
                     continue;
 
-                // debug("mimetype: %s", mimetype);
-                // debug("token: %s", token);
+                //debug("mimetype: %s", mimetype);
+                //debug("token: %s", token);
+
 
                 if(streq(ext, token)) {
 
                     debug("RETURNING: %s", mimetype);
                     return mimetype;
-                }
+                }*/
 	}
 	
 	fclose(fs);
