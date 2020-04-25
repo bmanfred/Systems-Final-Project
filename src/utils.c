@@ -50,7 +50,7 @@ char * determine_mimetype(const char *path) {
 		*ext++ = '\0';
 	}
         
-    debug("ext: %s", ext);
+    //debug("ext: %s", ext);
 
     /* Open MimeTypesPath file */
 	debug("opening MimeTypesPath");	
@@ -69,15 +69,13 @@ char * determine_mimetype(const char *path) {
 	
 	debug("ext: %s", ext);
 	while (fgets(buffer, BUFSIZ, fs)){
-		debug("ext: %s", ext);
-		break;
+
 
 		mimetype  = strtok(buffer, WHITESPACE);
-		debug("mimetype: %s", mimetype);
+			
 		token = strtok(NULL, WHITESPACE);
 		while (token){
-			debug("token: %s", token);
-			debug("ext:   %s", ext);
+
 
 			if (streq(ext, token)){
 				debug("returning: %s", mimetype);
@@ -130,11 +128,13 @@ char * determine_mimetype(const char *path) {
  **/
 char * determine_request_path(const char *uri) {
     
-    char buffer[BUFSIZ];
+
     debug("uri: %s", uri);
 
-    char *realRequestPath = realpath(RootPath, buffer);
+    char *realRequestPath = realpath(RootPath, NULL);
+
     sprintf(realRequestPath, "%s%s", realRequestPath, uri);
+
     debug("realRequestPath: %s", realRequestPath);
    
     if(realRequestPath == NULL)

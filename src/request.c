@@ -95,6 +95,7 @@ void free_request(Request *r) {
 	free(r->method);
 	free(r->uri);
 	free(r->query);
+	free(r->path);
 
     /* Free headers */
 
@@ -231,7 +232,12 @@ int parse_request_headers(Request *r) {
 		data = skip_whitespace(data);
 		chomp(data);
 		debug("NAME: %s", name);
-		debug("DATA: %s", data);	
+		debug("DATA: %s", data);
+		/*
+		curr = calloc(1, sizeof(Headers));
+		curr->name = name;
+		curr->data = data;
+		r->headers->next = curr;*/
 	}
 
 	

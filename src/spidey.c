@@ -111,8 +111,6 @@ int main(int argc, char *argv[]) {
 
 
 	
-
-
     /* Start either forking or single HTTP server */
 	if (mode == SINGLE)
 		single_server(server_fd);
