@@ -65,9 +65,12 @@ Status  handle_request(Request *r) {
     if(S_ISDIR(stats.st_mode)) {
         handle_browse_request(r);    
     }
-    else{
-        handle_file_request(r);    
+    else if (stats.st_mode & S_IXUSR){
+        handle_cgi_request(r);    
     }
+	else{
+		handle_file_request(r);
+	}
 
     return result;
 }
@@ -96,7 +99,7 @@ Status  handle_browse_request(Request *r) {
 	if (n < 0){
 		debug("scandir failed: %s", strerror(errno));
 		handle_error(r, HTTP_STATUS_NOT_FOUND);
-                return HTTP_STATUS_NOT_FOUND;
+        return HTTP_STATUS_NOT_FOUND;
 	}
 
     /* Write HTTP Header with OK Status and text/html Content-Type */
@@ -224,6 +227,29 @@ Status  handle_cgi_request(Request *r) {
      * http://en.wikipedia.org/wiki/Common_Gateway_Interface */
 
     // use setenv()
+	setenv("DOCUEMENT_ROOT", RootPath, 1);
+	setenv("QUERY_STRING", r->query, 1);
+	setenv("REMOTE_ADDR", r->host, 1);
+	setenv("REMOTE_PORT", r->port, 1);
+	setenv("REQUEST_METHOD", r->method, 1);
+	setenv("REQUEST_URI", r->uri, 1);
+	setenv("SCRIPT_FILENAME", r->path, 1);
+	setenv("SERVER_PORT", Port, 1);
+	// setenv for headers
+	for (Header *header = r->headers; header; header = header->next){
+		if (streq(header->name, "Accept"))
+			setenv("HTTP_ACCEPT", header->data, 1);
+		else if (streq(header->name, "Host"))
+			setenv("HTTP_HOST", header->data, 1);
+		else if (streq(header->name, "Accept-Language"))
+			setenv("HTTP_ACCEPT_LANGUAGE", header->data, 1);
+		else if (streq(header->name, "Accept-Encoding"))
+			setenv("HTTP_ACCEPT_ENCODING", header->data, 1);
+		else if (streq(header->name, "Connection"))
+			setenv("HTTP_CONNECTION", header->data, 1);
+		else if (streq(header->name, "User-Agent"))
+			setenv("HTTP_USER_AGENT", header->data, 1);
+	}
 
     /* Export CGI environment variables from request headers */
 

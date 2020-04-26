@@ -283,9 +283,9 @@ int parse_request_headers(Request *r) {
 	
 	
 #ifndef NDEBUG
-    /*for (Header *header = r->headers; header; header = header->next) {
+    for (Header *header = r->headers; header; header = header->next) {
     	debug("HTTP HEADER %s = %s", header->name, header->data);
-    }*/
+    }
 #endif
     return 0;
 
