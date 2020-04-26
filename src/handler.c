@@ -36,7 +36,12 @@ Status  handle_request(Request *r) {
     /* Determine request path */
 
     r->path = determine_request_path(r->uri);
-    
+    if(r->path == NULL) {
+        debug("path is NULL");
+        handle_error(r, HTTP_STATUS_BAD_REQUEST);
+        return HTTP_STATUS_BAD_REQUEST;
+    }
+
     debug("HTTP REQUEST PATH: %s", r->path);
     char * mime = determine_mimetype(r->path);
 	//debug("Mimetype: %s", mime);

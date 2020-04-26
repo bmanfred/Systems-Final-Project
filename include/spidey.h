@@ -65,6 +65,7 @@ typedef struct {
 
 Request *   accept_request(int sfd);
 void	    free_request(Request *request);
+Header *    headers_delete(Header *h, bool recursive);  /* User added to free headers */
 int	    parse_request(Request *request);
 
 /* HTTP Request Handlers */
