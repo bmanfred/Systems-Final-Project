@@ -39,7 +39,6 @@ char * determine_mimetype(const char *path) {
     FILE *fs = NULL;
 
     /* Find file extension */
-	debug("trying to find extension");
     debug("Path: %s", path);
 	ext = strchr(path, '.');
 	if (!ext){
@@ -50,7 +49,7 @@ char * determine_mimetype(const char *path) {
 		*ext++ = '\0';
 	}
         
-    //debug("ext: %s", ext);
+    debug("ext: %s", ext);
 
     /* Open MimeTypesPath file */
 	debug("opening MimeTypesPath");	
@@ -78,7 +77,6 @@ char * determine_mimetype(const char *path) {
 
 
 			if (streq(ext, token)){
-				debug("returning: %s", mimetype);
 				fclose(fs);
 				return mimetype;
 			}
