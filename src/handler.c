@@ -118,9 +118,15 @@ Status  handle_browse_request(Request *r) {
                 debug("IN BROWSE - r->uri: %s", r->uri);
                 debug("IN BROWSE - ENTRY NAME: %s", entries[i]->d_name);
                 debug("RPATH: %s", r->path);
-                debug("LINK LINE: <li><a href= \"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+				if (streq(r->uri, "/")){
+					debug("LINK LINE: <li><a href= \"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+					fprintf(r->stream, "<li><a href= \"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+				}
+				else{
+                	debug("LINK LINE: <li><a href= \"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
 
-                fprintf(r->stream, "<li><a href= \"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+                	fprintf(r->stream, "<li><a href= \"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+				}
 		free(entries[i]);
 	}
 	free(entries);

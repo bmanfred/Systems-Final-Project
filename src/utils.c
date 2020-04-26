@@ -78,7 +78,7 @@ char * determine_mimetype(const char *path) {
 
 			if (streq(ext, token)){
 				fclose(fs);
-				return mimetype;
+				return strdup(mimetype);
 			}
 			token = strtok(NULL, WHITESPACE);
 		}
