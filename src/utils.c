@@ -110,23 +110,41 @@ char * determine_mimetype(const char *path) {
  **/
 char * determine_request_path(const char *uri) {
     
-
     debug("uri: %s", uri);
+    
+    // stack buffer for sprintf
+    char buffer[BUFSIZ];
 
-    char *realRequestPath = realpath(RootPath, NULL);
+    sprintf(buffer, "%s/%s", RootPath, uri);
+    debug("buffer post sprintf: %s", buffer);
 
-    sprintf(realRequestPath, "%s%s", realRequestPath, uri);
-
-    debug("realRequestPath: %s", realRequestPath);
-   
-    if(realRequestPath == NULL)
+    // realpath mallocs
+    char *realPath = realpath(buffer, NULL);
+    if(realPath == NULL) {
+        debug("error: %s", strerror(errno));
         return NULL;
+    }
 
-    if(strstr(realRequestPath, RootPath) == NULL) {
+    debug("Post realpath: %s", realPath);
+   
+    // Security check
+    char *root = realpath(RootPath, NULL);
+    if(root == NULL) {
+        debug("error: %s", strerror(errno));
+        return NULL;
+    }
+
+    debug("ROOTPATH: %s", root);
+    debug("REALPATH: %s", realPath);
+
+    if(strncmp(realPath, root, strlen(root)) != 0) {
+        free(root);
         return NULL;    
     }
 
-    return realRequestPath;
+    free(root);
+
+    return realPath;
 }
 
 /**

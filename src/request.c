@@ -97,16 +97,42 @@ void free_request(Request *r) {
 	free(r->query);
 	free(r->path);
 
-    /* Free headers */
-	for (Header *header = r->headers; header; header = header->next){
-		free(header->name);
-		free(header->data);
-	}
+    /* Free headers */ 
+        headers_delete(r->headers, true); 
 
-	free(r->headers);
-		
     /* Free request */
 	free(r);
+}
+
+/*  
+    USER ADDED FUNCTION delete_headers
+    
+    recursively frees header linked list.
+
+    @ param h           Header SLL Pointer
+    @ param recursive   must be true for recursive purposes
+    
+    @ return            NULL
+*/
+Header *headers_delete(Header *h, bool recursive) {
+        
+    if(h == NULL) {
+        return NULL;
+    }
+
+    if(h->next == NULL) {
+        recursive = false;       
+    }
+
+    if(recursive) {
+        headers_delete(h->next, true);    
+    }
+
+    free(h->name);
+    free(h->data);
+    free(h);
+
+    return NULL;
 }
 
 /**
@@ -222,37 +248,37 @@ fail:
  *      headers.append(header)
  **/
 int parse_request_headers(Request *r) {
-    Header *curr = NULL;
+    // Header *curr = NULL;
     char buffer[BUFSIZ];
     char *name;
     char *data;
 
-	r->headers = NULL;
+    r->headers = NULL;
 
     /* Parse headers from socket */
-	while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
-		debug("Header: %s", buffer);
-		chomp(buffer);
-		name = strtok(buffer, ":");
-		data = strtok(NULL, ":");
+    while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
+	debug("Header: %s", buffer);
+	chomp(buffer);
+	name = strtok(buffer, ":");
+	data = strtok(NULL, ":");
 
-		name = skip_whitespace(name);
-		data = skip_whitespace(data);
+	name = skip_whitespace(name);
+	data = skip_whitespace(data);
 
-		debug("NAME: %s", name);
-		debug("DATA: %s", data);
+	debug("NAME: %s", name);
+	debug("DATA: %s", data);
 
-		Header *header = calloc(1, sizeof(Header));
-		if (!header){
-			debug("calloc failed for headers: %s", strerror(errno));
-			goto fail;
-		}
-
-		header->name = strdup(name);
-		header->data = strdup(data);
-		header->next = r->headers;
-		r->headers = header;
+	Header *header = calloc(1, sizeof(Header));
+    	if (!header){
+	    debug("calloc failed for headers: %s", strerror(errno));
+	    goto fail;
 	}
+
+	header->name = strdup(name);
+	header->data = strdup(data);
+	header->next = r->headers;
+	r->headers = header;
+    }
 
 	
 	
