@@ -257,7 +257,7 @@ int parse_request_headers(Request *r) {
 
     /* Parse headers from socket */
     while (fgets(buffer, BUFSIZ, r->stream) && strlen(buffer) > 2){
-	debug("Header: %s", buffer);
+	//debug("Header: %s", buffer);
 	chomp(buffer);
 	name = strtok(buffer, ":");
 	data = strtok(NULL, ":");
@@ -265,8 +265,8 @@ int parse_request_headers(Request *r) {
 	name = skip_whitespace(name);
 	data = skip_whitespace(data);
 
-	debug("NAME: %s", name);
-	debug("DATA: %s", data);
+	//debug("NAME: %s", name);
+	//debug("DATA: %s", data);
 
 	Header *header = calloc(1, sizeof(Header));
     	if (!header){
@@ -283,9 +283,9 @@ int parse_request_headers(Request *r) {
 	
 	
 #ifndef NDEBUG
-    for (Header *header = r->headers; header; header = header->next) {
+    /*for (Header *header = r->headers; header; header = header->next) {
     	debug("HTTP HEADER %s = %s", header->name, header->data);
-    }
+    }*/
 #endif
     return 0;
 
