@@ -153,7 +153,7 @@ int parse_request(Request *r) {
 	
 	if (status_method == 0 && status_headers == 0)
 		return 0;
-	else
+	else 
 		return -1;
 
 }
@@ -216,8 +216,9 @@ int parse_request_method(Request *r) {
 
     return 0;
 
-fail:
-    return -1;
+    // fail:
+    //  return -1;
+
 }
 
 /**
@@ -262,6 +263,9 @@ int parse_request_headers(Request *r) {
 	name = strtok(buffer, ":");
 	data = strtok(NULL, ":");
 
+        if(name == NULL || data == NULL)
+            return -1;
+
 	name = skip_whitespace(name);
 	data = skip_whitespace(data);
 
@@ -270,27 +274,31 @@ int parse_request_headers(Request *r) {
 
 	Header *header = calloc(1, sizeof(Header));
     	if (!header){
-	    debug("calloc failed for headers: %s", strerror(errno));
-	    goto fail;
+	    // debug("calloc failed for headers: %s", strerror(errno));
+	    return -1;
 	}
 
 	header->name = strdup(name);
+        if(header->name == NULL) {
+            return -1;    
+        }
 	header->data = strdup(data);
+        if(header->data == NULL) {
+            return -1;    
+        }
 	header->next = r->headers;
 	r->headers = header;
     }
 
-	
-	
+/*	
 #ifndef NDEBUG
     for (Header *header = r->headers; header; header = header->next) {
     	debug("HTTP HEADER %s = %s", header->name, header->data);
     }
 #endif
+*/
     return 0;
 
-fail:
-    return -1;
 }
 
 /* vim: set expandtab sts=4 sw=4 ts=8 ft=c: */

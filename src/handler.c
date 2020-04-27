@@ -34,6 +34,7 @@ Status  handle_request(Request *r) {
     result = parse_request(r);
     if(result == -1) {
         debug("error while parsing request");
+        handle_error(r, HTTP_STATUS_BAD_REQUEST);
         return HTTP_STATUS_BAD_REQUEST;
     }
     debug("r->method: %s", r->method);
@@ -42,8 +43,8 @@ Status  handle_request(Request *r) {
     r->path = determine_request_path(r->uri);
     if(r->path == NULL) {
         debug("path is NULL");
-        handle_error(r, HTTP_STATUS_BAD_REQUEST);
-        return HTTP_STATUS_BAD_REQUEST; 
+        handle_error(r, HTTP_STATUS_NOT_FOUND);
+        return HTTP_STATUS_NOT_FOUND; 
        }
 
     debug("HTTP REQUEST PATH: %s", r->path);
@@ -87,8 +88,6 @@ Status  handle_request(Request *r) {
  * with HTTP_STATUS_NOT_FOUND.
  **/
 
-/* NOTE: Works, but still need to add links to html to make directories dynamic */
- 
 Status  handle_browse_request(Request *r) {
     struct dirent **entries;
  
@@ -114,25 +113,31 @@ Status  handle_browse_request(Request *r) {
 	//if(r->path.substr(strlen(r->path)/sizeof(char) - 3,  == RootPath)
     
         fprintf(r->stream, "<ol>\n");
+
 	for (int i = 0; i < n; i++){
 		if (streq(entries[i]->d_name, ".")){
-			continue;
+			free(entries[i]);
+                        continue;
 		}
                 debug("IN BROWSE - r->uri: %s", r->uri);
                 debug("IN BROWSE - ENTRY NAME: %s", entries[i]->d_name);
                 debug("RPATH: %s", r->path);
-				if (streq(r->uri, "/")){
-					debug("LINK LINE: <li><a href= \"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
-					fprintf(r->stream, "<li><a href= \"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
-				}
-				else{
-                	debug("LINK LINE: <li><a href= \"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+		char last = r->uri[strlen(r->uri)-1];
+                if (last == '/'){
+		    //debug("LINK LINE: <li><a href=\"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
 
-                	fprintf(r->stream, "<li><a href= \"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
-				}
+		    fprintf(r->stream, "<li><a href=\"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+		}
+		else{
+                    //debug("LINK LINE: <li><a href=\"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+
+                    fprintf(r->stream, "<li><a href=\"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+		}
+
 		free(entries[i]);
 	}
-	free(entries);
+
+        free(entries);
 	fprintf(r->stream, "</ol>\n");
 
 
@@ -174,8 +179,8 @@ Status  handle_file_request(Request *r) {
     /* Determine mimetype */
     mimetype = determine_mimetype(r->path);
     if(mimetype == NULL) {
-        
-        }
+        debug("invalid mimetype"); 
+    }
     debug("mimetype: %s", mimetype);
 
     /* Write HTTP Headers with OK status and determined Content-Type */
@@ -227,7 +232,7 @@ Status  handle_cgi_request(Request *r) {
      * http://en.wikipedia.org/wiki/Common_Gateway_Interface */
 
     // use setenv()
-	setenv("DOCUEMENT_ROOT", RootPath, 1);
+	setenv("DOCUMENT_ROOT", RootPath, 1);
 	setenv("QUERY_STRING", r->query, 1);
 	setenv("REMOTE_ADDR", r->host, 1);
 	setenv("REMOTE_PORT", r->port, 1);
@@ -286,8 +291,7 @@ Status  handle_error(Request *r, Status status) {
     debug("handling an ERROR");
 
     /* Write HTTP Header */
-        // should this line still be 200 OK even if there's an error?
-	fprintf(r->stream, "HTTP/1.0 200 OK\r\n");
+	fprintf(r->stream, "HTTP/1.0 %s\r\n", status_string);
 	fprintf(r->stream, "Content-Type: text/html\r\n");
 	fprintf(r->stream, "\r\n");
 
