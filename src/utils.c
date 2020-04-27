@@ -39,17 +39,15 @@ char * determine_mimetype(const char *path) {
     FILE *fs = NULL;
 
     /* Find file extension */
-    debug("Path: %s", path);
+    //debug("Path: %s", path);
 	ext = strchr(path, '.');
 	if (!ext){
 		ext = "";
-        return DefaultMimeType;
+        return strdup(DefaultMimeType);
 	}
 	else{
 		*ext++ = '\0';
 	}
-        
-    debug("ext: %s", ext);
 
     /* Open MimeTypesPath file */
 	debug("opening MimeTypesPath");	
@@ -59,13 +57,11 @@ char * determine_mimetype(const char *path) {
 		return NULL;
 	}
 
-    
     /* Scan file for matching file extensions */
   		  /* read each line in MimeTypesPath, saving mimetype and token
 		 * depending on whitespace in file 
     */
- 	debug("reading from mimetypes file");
-	
+ 	debug("reading from mimetypes file");	
 	debug("ext: %s", ext);
 	while (fgets(buffer, BUFSIZ, fs)){
 
@@ -74,8 +70,6 @@ char * determine_mimetype(const char *path) {
 			
 		token = strtok(NULL, WHITESPACE);
 		while (token){
-
-
 			if (streq(ext, token)){
 				fclose(fs);
 				return strdup(mimetype);
@@ -108,13 +102,13 @@ char * determine_mimetype(const char *path) {
  **/
 char * determine_request_path(const char *uri) {
     
-    debug("uri: %s", uri);
+    //debug("uri: %s", uri);
     
     // stack buffer for sprintf
     char buffer[BUFSIZ];
 
     sprintf(buffer, "%s/%s", RootPath, uri);
-    debug("buffer post sprintf: %s", buffer);
+    //debug("buffer post sprintf: %s", buffer);
 
     // realpath mallocs
     char *realPath = realpath(buffer, NULL);
@@ -123,7 +117,7 @@ char * determine_request_path(const char *uri) {
         return NULL;
     }
 
-    debug("Post realpath: %s", realPath);
+    //debug("Post realpath: %s", realPath);
    
     // Security check
     char *root = realpath(RootPath, NULL);
@@ -131,9 +125,6 @@ char * determine_request_path(const char *uri) {
         debug("error: %s", strerror(errno));
         return NULL;
     }
-
-    debug("ROOTPATH: %s", root);
-    debug("REALPATH: %s", realPath);
 
     if(strncmp(realPath, root, strlen(root)) != 0) {
         free(root);
