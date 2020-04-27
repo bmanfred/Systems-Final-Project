@@ -90,8 +90,8 @@ Status  handle_request(Request *r) {
 
 Status  handle_browse_request(Request *r) {
     struct dirent **entries;
-	char buffer[BUFSIZ];
-	size_t nread;
+	//char buffer[BUFSIZ];
+	//size_t nread;
  
     debug("handling a BROWSE");
 
@@ -109,6 +109,7 @@ Status  handle_browse_request(Request *r) {
 	fprintf(r->stream, "\r\n");
 
     /* For each entry in directory, emit HTML list item */
+	/*
 	char *directoryPath = realpath("directory.html", NULL);
 	FILE *fs = fopen(directoryPath, "r");
     if (!fs){
@@ -119,7 +120,7 @@ Status  handle_browse_request(Request *r) {
     while (nread > 0){
     	fwrite(buffer, 1, nread, r->stream);
     	nread = fread(buffer, 1, BUFSIZ, fs);
-    }
+    }*/
          
         // homepage
         //char sub[] = r->path.substr(strlen
@@ -152,8 +153,8 @@ Status  handle_browse_request(Request *r) {
 
         free(entries);
 	fprintf(r->stream, "</ol>\n");
-	free(directoryPath);
-	fclose(fs);
+	//free(directoryPath);
+	//fclose(fs);
 
 
     /* Return OK */
