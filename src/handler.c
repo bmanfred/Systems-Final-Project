@@ -90,6 +90,8 @@ Status  handle_request(Request *r) {
 
 Status  handle_browse_request(Request *r) {
     struct dirent **entries;
+	char buffer[BUFSIZ];
+	size_t nread;
  
     debug("handling a BROWSE");
 
@@ -107,6 +109,17 @@ Status  handle_browse_request(Request *r) {
 	fprintf(r->stream, "\r\n");
 
     /* For each entry in directory, emit HTML list item */
+	char *directoryPath = realpath("directory.html", NULL);
+	FILE *fs = fopen(directoryPath, "r");
+    if (!fs){
+        debug("error: %s", strerror(errno));
+        return HTTP_STATUS_NOT_FOUND;
+    }
+	nread = fread(buffer, 1, BUFSIZ, fs);
+    while (nread > 0){
+    	fwrite(buffer, 1, nread, r->stream);
+    	nread = fread(buffer, 1, BUFSIZ, fs);
+    }
          
         // homepage
         //char sub[] = r->path.substr(strlen
@@ -139,6 +152,8 @@ Status  handle_browse_request(Request *r) {
 
         free(entries);
 	fprintf(r->stream, "</ol>\n");
+	free(directoryPath);
+	fclose(fs);
 
 
     /* Return OK */
@@ -287,6 +302,8 @@ Status  handle_cgi_request(Request *r) {
  **/
 Status  handle_error(Request *r, Status status) {
     const char *status_string = http_status_string(status);
+	char buffer[BUFSIZ];
+	size_t nread;
 
     debug("handling an ERROR");
 
@@ -297,8 +314,20 @@ Status  handle_error(Request *r, Status status) {
 
     /* Write HTML Description of Error*/
 	fprintf(r->stream, "<h1><center>%s</center></h1>\n", status_string);
-	fprintf(r->stream, "<h3><center>Nice Try!</center></h3>\n");
+	char *errorPath = realpath("error.html", NULL);
+	FILE *fs = fopen(errorPath, "r");
+    if (!fs){
+        debug("error: %s", strerror(errno));
+        return HTTP_STATUS_NOT_FOUND;
+    }
+	nread = fread(buffer, 1, BUFSIZ, fs);
+    while (nread > 0){
+    	fwrite(buffer, 1, nread, r->stream);
+    	nread = fread(buffer, 1, BUFSIZ, fs);
+    }
 
+	fclose(fs);
+	free(errorPath);
     /* Return specified status */
     return status;
 }
