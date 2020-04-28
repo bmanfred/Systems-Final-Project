@@ -90,8 +90,8 @@ Status  handle_request(Request *r) {
 
 Status  handle_browse_request(Request *r) {
     struct dirent **entries;
-	//char buffer[BUFSIZ];
-	//size_t nread;
+	char buffer[BUFSIZ];
+	size_t nread;
  
     debug("handling a BROWSE");
 
@@ -107,9 +107,9 @@ Status  handle_browse_request(Request *r) {
 	fprintf(r->stream, "HTTP/1.0 200 OK\r\n");
 	fprintf(r->stream, "Content-Type: text/html\r\n");
 	fprintf(r->stream, "\r\n");
-
+	fprintf(r->stream, "<h1><center>%s</center></h1>", r->uri);
     /* For each entry in directory, emit HTML list item */
-	/*
+	
 	char *directoryPath = realpath("directory.html", NULL);
 	FILE *fs = fopen(directoryPath, "r");
     if (!fs){
@@ -120,13 +120,14 @@ Status  handle_browse_request(Request *r) {
     while (nread > 0){
     	fwrite(buffer, 1, nread, r->stream);
     	nread = fread(buffer, 1, BUFSIZ, fs);
-    }*/
+    }
          
         // homepage
         //char sub[] = r->path.substr(strlen
 	//if(r->path.substr(strlen(r->path)/sizeof(char) - 3,  == RootPath)
+	//fprintf(r->stream, "<img  src=https://files.slack.com/files-pri/T0HJVP8MS-F01277K2GDD/image.png>");
     
-        fprintf(r->stream, "<ol>\n");
+        fprintf(r->stream, "<ul>\n");
 
 	for (int i = 0; i < n; i++){
 		if (streq(entries[i]->d_name, ".")){
@@ -140,21 +141,24 @@ Status  handle_browse_request(Request *r) {
                 if (last == '/'){
 		    //debug("LINK LINE: <li><a href=\"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
 
-		    fprintf(r->stream, "<li><a href=\"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+		    	fprintf(r->stream, "<li style=\"font-size: 30px\"><a href=\"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
 		}
 		else{
                     //debug("LINK LINE: <li><a href=\"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
 
-                    fprintf(r->stream, "<li><a href=\"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+                    fprintf(r->stream, "<li style=\"font-size: 30px\"><a href=\"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
 		}
 
 		free(entries[i]);
 	}
 
         free(entries);
-	fprintf(r->stream, "</ol>\n");
-	//free(directoryPath);
-	//fclose(fs);
+	fprintf(r->stream, "</ul>\n");
+	if (streq(r->uri, "/")){
+		fprintf(r->stream, "<center><img src=https://files.slack.com/files-pri/T0HJVP8MS-F012N5U6PM1/image.png></center>");
+	}
+	free(directoryPath);
+	fclose(fs);
 
 
     /* Return OK */
