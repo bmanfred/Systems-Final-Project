@@ -11,8 +11,6 @@ form = cgi.FieldStorage()
 
 
 
-
-
 print('''
 <form action>
     <input type='radio' name='class' value='Discrete Math'/> Discrete Math
