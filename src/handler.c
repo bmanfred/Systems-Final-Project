@@ -107,7 +107,13 @@ Status  handle_browse_request(Request *r) {
 	fprintf(r->stream, "HTTP/1.0 200 OK\r\n");
 	fprintf(r->stream, "Content-Type: text/html\r\n");
 	fprintf(r->stream, "\r\n");
-	fprintf(r->stream, "<h1><center>%s</center></h1>", r->uri);
+
+
+        fprintf(r->stream, "<h1><center>Path: %s</center></h1>", r->uri);
+        if(streq(r->uri, "/")) {
+            fprintf(r->stream, "<h2><font size = 25><strong>- Welcome to the Mainframe -</strong></font><h2>");
+        }
+
     /* For each entry in directory, emit HTML list item */
 	
 	char *directoryPath = realpath("directory.html", NULL);
@@ -122,11 +128,7 @@ Status  handle_browse_request(Request *r) {
     	nread = fread(buffer, 1, BUFSIZ, fs);
     }
          
-        // homepage
-        //char sub[] = r->path.substr(strlen
-	//if(r->path.substr(strlen(r->path)/sizeof(char) - 3,  == RootPath)
-	//fprintf(r->stream, "<img  src=https://files.slack.com/files-pri/T0HJVP8MS-F01277K2GDD/image.png>");
-    
+
         fprintf(r->stream, "<ul>\n");
 
 	for (int i = 0; i < n; i++){
@@ -134,30 +136,28 @@ Status  handle_browse_request(Request *r) {
 			free(entries[i]);
                         continue;
 		}
-                debug("IN BROWSE - r->uri: %s", r->uri);
-                debug("IN BROWSE - ENTRY NAME: %s", entries[i]->d_name);
+                //debug("IN BROWSE - r->uri: %s", r->uri);
+                //debug("IN BROWSE - ENTRY NAME: %s", entries[i]->d_name);
                 debug("RPATH: %s", r->path);
 		char last = r->uri[strlen(r->uri)-1];
                 if (last == '/'){
-		    //debug("LINK LINE: <li><a href=\"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
-
 		    	fprintf(r->stream, "<li style=\"font-size: 30px\"><a href=\"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
 		}
 		else{
-                    //debug("LINK LINE: <li><a href=\"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
-
                     fprintf(r->stream, "<li style=\"font-size: 30px\"><a href=\"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
 		}
+
 
 		free(entries[i]);
 	}
 
         free(entries);
-	fprintf(r->stream, "</ul>\n");
-	if (streq(r->uri, "/")){
-		fprintf(r->stream, "<center><img src=https://files.slack.com/files-pri/T0HJVP8MS-F012N5U6PM1/image.png></center>");
-	}
-	free(directoryPath);
+	
+        fprintf(r->stream, "</ul>\n");
+        fprintf(r->stream, "<center><img src=https://files.slack.com/files-pri/T0HJVP8MS-F012N5U6PM1/image.png>");
+        fprintf(r->stream, "<img src=https://files.slack.com/files-pri/T0HJVP8MS-F01277K2GDD/image.png></center>");
+	
+        free(directoryPath);
 	fclose(fs);
 
 
