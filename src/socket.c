@@ -21,44 +21,44 @@
 // using echo_socket_listen.c as example code from lecture 21
 int socket_listen(const char *port) {
     /* Lookup server address information */
-	struct addrinfo *results;
-	struct addrinfo hints = {
-		.ai_family = AF_UNSPEC,
-		.ai_socktype = SOCK_STREAM,
-		.ai_flags = AI_PASSIVE,
-	};
+    struct addrinfo *results;
+    struct addrinfo hints = {
+        .ai_family = AF_UNSPEC,
+	.ai_socktype = SOCK_STREAM,
+	.ai_flags = AI_PASSIVE,
+    };
 
-	int status = getaddrinfo(NULL, port, &hints, &results);
-	if (status != 0){
-		fprintf(stderr, "getaddrinfo failes: %s\n", gai_strerror(status));
-		return -1;
-	}
+    int status = getaddrinfo(NULL, port, &hints, &results);
+    if (status != 0){
+    	fprintf(stderr, "getaddrinfo failes: %s\n", gai_strerror(status));
+    	return -1;
+    }
 
     /* For each server entry, allocate socket and try to connect */
     int socket_fd = -1;
     for (struct addrinfo *p = results; p != NULL && socket_fd < 0; p = p->ai_next) {
 	/* Allocate socket */
-		socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-		if (socket_fd < 0){
-			fprintf(stderr, "unable to make socket: %s\n", strerror(errno));
-			continue;
-		}
+	socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+	if (socket_fd < 0){
+	    fprintf(stderr, "unable to make socket: %s\n", strerror(errno));
+	    continue;
+	}
 
 	/* Bind socket */
-		if (bind(socket_fd, p->ai_addr, p->ai_addrlen) < 0){
-			fprintf(stderr, "unable to bind socket: %s\n", strerror(errno));
-			close(socket_fd);
-			socket_fd = -1;
-			continue;
-		}
+	if (bind(socket_fd, p->ai_addr, p->ai_addrlen) < 0){
+	    fprintf(stderr, "unable to bind socket: %s\n", strerror(errno));
+	    close(socket_fd);
+	    socket_fd = -1;
+	    continue;
+	}
 
     	/* Listen to socket */
-		if (listen(socket_fd, SOMAXCONN) < 0){
-			fprintf(stderr, "unable to listen: %s\n", strerror(errno));
-			close(socket_fd);
-			socket_fd = -1;
-			continue;
-		}
+	if (listen(socket_fd, SOMAXCONN) < 0){
+	    fprintf(stderr, "unable to listen: %s\n", strerror(errno));
+	    close(socket_fd);
+	    socket_fd = -1;
+	    continue;
+	}
     }
 
     freeaddrinfo(results);

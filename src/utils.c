@@ -5,7 +5,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <string.h>
-
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -40,46 +39,43 @@ char * determine_mimetype(const char *path) {
 
     /* Find file extension */
     //debug("Path: %s", path);
-	ext = strchr(path, '.');
-	if (!ext){
-		ext = "";
+    ext = strchr(path, '.');
+    if (!ext){
+    	ext = "";
         return strdup(DefaultMimeType);
-	}
-	else{
-		*ext++ = '\0';
-	}
+    }
+    else{
+    	*ext++ = '\0';
+    }
 
     /* Open MimeTypesPath file */
-	debug("opening MimeTypesPath");	
-	fs = fopen(MimeTypesPath, "r");
-	if (!fs){
-		debug("unable to open file: %s", strerror(errno));
-		return NULL;
-	}
+    debug("opening MimeTypesPath");	
+    fs = fopen(MimeTypesPath, "r");
+    if (!fs){
+    	debug("unable to open file: %s", strerror(errno));
+    	return NULL;
+    }
 
     /* Scan file for matching file extensions */
-  		  /* read each line in MimeTypesPath, saving mimetype and token
-		 * depending on whitespace in file 
+    /* read each line in MimeTypesPath, saving mimetype and token
+    * depending on whitespace in file 
     */
- 	debug("reading from mimetypes file");	
-	debug("ext: %s", ext);
-	while (fgets(buffer, BUFSIZ, fs)){
-
-
-		mimetype  = strtok(buffer, WHITESPACE);
-			
-		token = strtok(NULL, WHITESPACE);
-		while (token){
-			if (streq(ext, token)){
-				fclose(fs);
-				return strdup(mimetype);
-			}
-			token = strtok(NULL, WHITESPACE);
-		}
-
+    //debug("reading from mimetypes file");	
+    //debug("ext: %s", ext);
+    while (fgets(buffer, BUFSIZ, fs)){
+	mimetype = strtok(buffer, WHITESPACE);
+        token = strtok(NULL, WHITESPACE);
+        
+        while(token){
+	    if (streq(ext, token)){
+	        fclose(fs);
+	        return strdup(mimetype);
+	    }
+            token = strtok(NULL, WHITESPACE);
 	}
+    }
 	
-	fclose(fs);
+    fclose(fs);
  
     return DefaultMimeType;
 }
@@ -153,12 +149,12 @@ const char * http_status_string(Status status) {
         "418 I'm A Teapot",
     };
 
-	if (status < sizeof(StatusStrings) / sizeof(char *)){
-		return StatusStrings[status];
-	}
-	else{
-		return NULL;
-	}
+    if (status < sizeof(StatusStrings) / sizeof(char *)){
+    	return StatusStrings[status];
+    }
+    else{
+    	return NULL;
+    }
 
 }
 

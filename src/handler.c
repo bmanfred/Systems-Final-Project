@@ -45,7 +45,7 @@ Status  handle_request(Request *r) {
         debug("path is NULL");
         handle_error(r, HTTP_STATUS_NOT_FOUND);
         return HTTP_STATUS_NOT_FOUND; 
-       }
+    }
 
     debug("HTTP REQUEST PATH: %s", r->path);
 
@@ -69,9 +69,9 @@ Status  handle_request(Request *r) {
     else if (stats.st_mode & S_IXUSR){
         handle_cgi_request(r);    
     }
-	else{
-		handle_file_request(r);
-	}
+    else{
+    	handle_file_request(r);
+    }
 
     return result;
 }
@@ -90,76 +90,76 @@ Status  handle_request(Request *r) {
 
 Status  handle_browse_request(Request *r) {
     struct dirent **entries;
-	char buffer[BUFSIZ];
-	size_t nread;
+    char buffer[BUFSIZ];
+    size_t nread;
  
     debug("handling a BROWSE");
 
     /* Open a directory for reading or scanning */
     int n = scandir(r->path, &entries, 0, alphasort);
 	if (n < 0){
-		debug("scandir failed: %s", strerror(errno));
-		handle_error(r, HTTP_STATUS_NOT_FOUND);
-        return HTTP_STATUS_NOT_FOUND;
+	    debug("scandir failed: %s", strerror(errno));
+	    handle_error(r, HTTP_STATUS_NOT_FOUND);
+            return HTTP_STATUS_NOT_FOUND;
 	}
 
     /* Write HTTP Header with OK Status and text/html Content-Type */
-	fprintf(r->stream, "HTTP/1.0 200 OK\r\n");
-	fprintf(r->stream, "Content-Type: text/html\r\n");
-	fprintf(r->stream, "\r\n");
+    fprintf(r->stream, "HTTP/1.0 200 OK\r\n");
+    fprintf(r->stream, "Content-Type: text/html\r\n");
+    fprintf(r->stream, "\r\n");
 
+    fprintf(r->stream, "<h1><center>Path: %s</center></h1>", r->uri);
+    if(streq(r->uri, "/")) {
+        fprintf(r->stream, "<h2><font size = 25><strong>- Welcome to the Mainframe -</strong></font><h2>");
+    }
 
-        fprintf(r->stream, "<h1><center>Path: %s</center></h1>", r->uri);
-        if(streq(r->uri, "/")) {
-            fprintf(r->stream, "<h2><font size = 25><strong>- Welcome to the Mainframe -</strong></font><h2>");
-        }
-
-    /* For each entry in directory, emit HTML list item */
-	
-	char *directoryPath = realpath("directory.html", NULL);
-	FILE *fs = fopen(directoryPath, "r");
+    /* For each entry in directory, emit HTML list item */	
+    char *directoryPath = realpath("directory.html", NULL);
+    FILE *fs = fopen(directoryPath, "r");
     if (!fs){
         debug("error: %s", strerror(errno));
         return HTTP_STATUS_NOT_FOUND;
     }
-	nread = fread(buffer, 1, BUFSIZ, fs);
+
+    // write fs to socket stream
+    nread = fread(buffer, 1, BUFSIZ, fs);
     while (nread > 0){
     	fwrite(buffer, 1, nread, r->stream);
     	nread = fread(buffer, 1, BUFSIZ, fs);
-    }
-         
+    }    
 
-        fprintf(r->stream, "<ul>\n");
+    fprintf(r->stream, "<ul>\n");
 
-	for (int i = 0; i < n; i++){
-		if (streq(entries[i]->d_name, ".")){
-			free(entries[i]);
-                        continue;
-		}
-                //debug("IN BROWSE - r->uri: %s", r->uri);
-                //debug("IN BROWSE - ENTRY NAME: %s", entries[i]->d_name);
-                debug("RPATH: %s", r->path);
-		char last = r->uri[strlen(r->uri)-1];
-                if (last == '/'){
-		    	fprintf(r->stream, "<li style=\"font-size: 30px\"><a href=\"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
-		}
-		else{
-                    fprintf(r->stream, "<li style=\"font-size: 30px\"><a href=\"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
-		}
-
-
-		free(entries[i]);
+    // loop through entries in the directory
+    for (int i = 0; i < n; i++){
+        // skip current directory
+	if (streq(entries[i]->d_name, ".")){
+	    free(entries[i]);
+            continue;
+	}
+        //debug("IN BROWSE - r->uri: %s", r->uri);
+        //debug("IN BROWSE - ENTRY NAME: %s", entries[i]->d_name);
+        //debug("RPATH: %s", r->path);
+	char last = r->uri[strlen(r->uri)-1];
+        if (last == '/'){
+    	    fprintf(r->stream, "<li style=\"font-size: 30px\"><a href=\"%s%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
+	}
+	else{
+            fprintf(r->stream, "<li style=\"font-size: 30px\"><a href=\"%s/%s\">%s</a></li>\n", r->uri, entries[i]->d_name, entries[i]->d_name);
 	}
 
-        free(entries);
-	
-        fprintf(r->stream, "</ul>\n");
-        fprintf(r->stream, "<center><img src=https://files.slack.com/files-pri/T0HJVP8MS-F012N5U6PM1/image.png>");
-        fprintf(r->stream, "<img src=https://files.slack.com/files-pri/T0HJVP8MS-F01277K2GDD/image.png></center>");
-	
-        free(directoryPath);
-	fclose(fs);
+	free(entries[i]);
+    }
 
+    free(entries);
+
+    // image html    
+    fprintf(r->stream, "</ul>\n");
+    fprintf(r->stream, "<center><img src=https://files.slack.com/files-pri/T0HJVP8MS-F012N5U6PM1/image.png>");
+    fprintf(r->stream, "<img src=https://files.slack.com/files-pri/T0HJVP8MS-F01277K2GDD/image.png></center>");
+	
+    free(directoryPath);
+    fclose(fs);
 
     /* Return OK */
     return HTTP_STATUS_OK;
@@ -176,8 +176,6 @@ Status  handle_browse_request(Request *r) {
  * If the path cannot be opened for reading, then handle error with
  * HTTP_STATUS_NOT_FOUND.
  **/
-
-/* NOTE: Works, but still getting Valgrind Errors, no memory leaks though */
 
 Status  handle_file_request(Request *r) {
     FILE *fs;
@@ -239,8 +237,6 @@ Status  handle_file_request(Request *r) {
  * HTTP_STATUS_INTERNAL_SERVER_ERROR.
  **/
 
-/* INCOMPLETE */
-
 Status  handle_cgi_request(Request *r) {
     FILE *pfs;
     char buffer[BUFSIZ];
@@ -252,31 +248,31 @@ Status  handle_cgi_request(Request *r) {
      * http://en.wikipedia.org/wiki/Common_Gateway_Interface */
 
     // use setenv()
-	setenv("DOCUMENT_ROOT", RootPath, 1);
-	setenv("QUERY_STRING", r->query, 1);
-	setenv("REMOTE_ADDR", r->host, 1);
-	setenv("REMOTE_PORT", r->port, 1);
-	setenv("REQUEST_METHOD", r->method, 1);
-	setenv("REQUEST_URI", r->uri, 1);
-	setenv("SCRIPT_FILENAME", r->path, 1);
-	setenv("SERVER_PORT", Port, 1);
-	// setenv for headers
-	for (Header *header = r->headers; header; header = header->next){
-		if (streq(header->name, "Accept"))
-			setenv("HTTP_ACCEPT", header->data, 1);
-		else if (streq(header->name, "Host"))
-			setenv("HTTP_HOST", header->data, 1);
-		else if (streq(header->name, "Accept-Language"))
-			setenv("HTTP_ACCEPT_LANGUAGE", header->data, 1);
-		else if (streq(header->name, "Accept-Encoding"))
-			setenv("HTTP_ACCEPT_ENCODING", header->data, 1);
-		else if (streq(header->name, "Connection"))
-			setenv("HTTP_CONNECTION", header->data, 1);
-		else if (streq(header->name, "User-Agent"))
-			setenv("HTTP_USER_AGENT", header->data, 1);
-	}
-
+    setenv("DOCUMENT_ROOT", RootPath, 1);
+    setenv("QUERY_STRING", r->query, 1);
+    setenv("REMOTE_ADDR", r->host, 1);
+    setenv("REMOTE_PORT", r->port, 1);
+    setenv("REQUEST_METHOD", r->method, 1);
+    setenv("REQUEST_URI", r->uri, 1);
+    setenv("SCRIPT_FILENAME", r->path, 1);
+    setenv("SERVER_PORT", Port, 1);
+    
     /* Export CGI environment variables from request headers */
+    // setenv for headers
+    for (Header *header = r->headers; header; header = header->next){
+    	if (streq(header->name, "Accept"))
+    	    setenv("HTTP_ACCEPT", header->data, 1);
+    	else if (streq(header->name, "Host"))
+    	    setenv("HTTP_HOST", header->data, 1);
+    	else if (streq(header->name, "Accept-Language"))
+    	    setenv("HTTP_ACCEPT_LANGUAGE", header->data, 1);
+    	else if (streq(header->name, "Accept-Encoding"))
+    	    setenv("HTTP_ACCEPT_ENCODING", header->data, 1);
+    	else if (streq(header->name, "Connection"))
+    	    setenv("HTTP_CONNECTION", header->data, 1);
+    	else if (streq(header->name, "User-Agent"))
+	    setenv("HTTP_USER_AGENT", header->data, 1);
+    }
 
     /* POpen CGI Script */
     pfs = popen(r->path, "r");
@@ -305,34 +301,38 @@ Status  handle_cgi_request(Request *r) {
  * This writes an HTTP status error code and then generates an HTML message to
  * notify the user of the error.
  **/
+
 Status  handle_error(Request *r, Status status) {
     const char *status_string = http_status_string(status);
-	char buffer[BUFSIZ];
-	size_t nread;
+    char buffer[BUFSIZ];
+    size_t nread;
 
     debug("handling an ERROR");
 
     /* Write HTTP Header */
-	fprintf(r->stream, "HTTP/1.0 %s\r\n", status_string);
-	fprintf(r->stream, "Content-Type: text/html\r\n");
-	fprintf(r->stream, "\r\n");
+    fprintf(r->stream, "HTTP/1.0 %s\r\n", status_string);
+    fprintf(r->stream, "Content-Type: text/html\r\n");
+    fprintf(r->stream, "\r\n");
 
     /* Write HTML Description of Error*/
-	fprintf(r->stream, "<h1><center>%s</center></h1>\n", status_string);
-	char *errorPath = realpath("error.html", NULL);
-	FILE *fs = fopen(errorPath, "r");
+    fprintf(r->stream, "<h1><center>%s</center></h1>\n", status_string);
+    char *errorPath = realpath("error.html", NULL);
+    FILE *fs = fopen(errorPath, "r");
     if (!fs){
         debug("error: %s", strerror(errno));
         return HTTP_STATUS_NOT_FOUND;
     }
-	nread = fread(buffer, 1, BUFSIZ, fs);
+
+    // write fs to socket stream    
+    nread = fread(buffer, 1, BUFSIZ, fs);
     while (nread > 0){
     	fwrite(buffer, 1, nread, r->stream);
     	nread = fread(buffer, 1, BUFSIZ, fs);
     }
 
-	fclose(fs);
-	free(errorPath);
+    fclose(fs);
+    free(errorPath);
+    
     /* Return specified status */
     return status;
 }
