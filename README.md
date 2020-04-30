@@ -10,7 +10,7 @@ Andrew Rocks    - arocks@nd.edu
 ## Demonstration
 
 # Link to project Drive folder w/ video
-- [https://drive.google.com/drive/u/1/folders/1ASD1moBWfaOmlANm0HGcSbH8Kumy3DJR]()
+- [Project folder & video](https://drive.google.com/drive/u/1/folders/1ASD1moBWfaOmlANm0HGcSbH8Kumy3DJR)
 
 
 ## Errata
