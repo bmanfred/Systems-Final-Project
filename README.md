@@ -25,6 +25,7 @@ Brendan and Andrew worked on utils.c
 Andrew worked on handlers in handler.c
 Andrew and Brendan finished utils.c
 Andrew finished handler.c
+Andrew debugged Valgrind and test script errors
 Brendan set up HTML
 Andrew set up VPS & domain
 Brendan created CGI scripts
